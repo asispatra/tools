@@ -1,4 +1,6 @@
 # System stat collection tool
+A tool to collect mpstat, freestat, iostat, vmstat, nvidia_smi in specified time interval.
+Note: Please make sure these commands are installed.
 
 To collect system stats
 ```
