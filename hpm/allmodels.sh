@@ -79,7 +79,18 @@ for elm in "${vars[@]}" ; do
           fi
         done
       else
-        tcmds=$(echo "${tmpcmds}" | sed "s/$/ --"${option}"="${val}"/g")
+        if [ "$option" == "model" ] ; then
+          if echo $val | grep ":" > /dev/null ; then
+            BS=$(echo $val | cut -d':' -f2)
+            val=$(echo $val | cut -d':' -f1)
+            tcmds=$(echo "${tmpcmds}" | sed "s/$/ --"${option}"="${val}"/g")
+            tcmds=$(echo "${tcmds}" | sed 's/--batch_size=[^ ][^ ]*/--batch_size='$BS'/g') 
+           else
+             tcmds=$(echo "${tmpcmds}" | sed "s/$/ --"${option}"="${val}"/g")
+          fi
+        else
+          tcmds=$(echo "${tmpcmds}" | sed "s/$/ --"${option}"="${val}"/g")
+        fi 
         cmds="${cmds}$tcmds\n"
       fi
     done
