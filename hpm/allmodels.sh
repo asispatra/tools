@@ -102,6 +102,7 @@ done
 
 cmds=$(echo "$cmds" | sed 's/ /:/g')
 
+cmdno=0
 for cmd in $cmds ; do
   cmd=$(echo $cmd | tr ':' ' ')
   logfile=$(echo "$cmd" | tr '_' '-' | tr ' ' '_' | sed 's/--//g' | sed 's/python_tf-cnn-benchmarks.py_//g' | tr '=' '-')
@@ -116,6 +117,10 @@ for cmd in $cmds ; do
   iter=0
   while [ $iter -lt $iters ] ; do
     log="${results_dir}/${base}_${logfile}_${ext}_${iter}"
+    filename_length=$(echo "${base}_${logfile}_${ext}_${iter}" | wc -c)
+    if [ $filename_length -gt 240 ] ; then
+      log=$(echo $log | sed 's/'$logfile'/'$cmdno'/')
+    fi
     _cmd=$cmd
     if [ "$nvprof" != "" ] ; then 
       _cmd="${nvprof} ${log}.nvvp ${cmd} ${nv_extra}"
@@ -136,4 +141,5 @@ for cmd in $cmds ; do
     fi
     iter=$(expr $iter + 1)
   done
+  cmdno=$(expr $cmdno + 1)
 done
