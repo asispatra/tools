@@ -41,7 +41,7 @@ fi
 
 ext=$(date +%d%b%Y_%H%M%S)
 
-systype=$(lscpu | grep "Model name" | sed 's/.*:\s\s*\([^ (][^ (]*\).*/\1/')
+systype=$(lscpu | grep "Model name" | sed 's/.*:\s\s*\([^ ,(][^ ,(]*\).*/\1/')
 SMT=$(lscpu | grep "Thread(s) per core" | tr -d ' ' | cut -d ':' -f2)
 GPUdriver=$(cat /proc/driver/nvidia/version | grep "NVRM version" | sed 's/.*Kernel Module\s\s*\([^ ][^ ]*\).*/\1/')
 HPM=$((git show 2>/dev/null| grep "^commit" || echo default) | head -1 | sed 's/^commit \(.......\).*/\1/')
