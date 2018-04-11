@@ -11,3 +11,8 @@ wget https://raw.githubusercontent.com/asispatra/tools/master/hpm/allmodels.sh
 ```
 wget https://raw.githubusercontent.com/asispatra/tools/master/hpm/downloads.sh -O - | bash
 ```
+
+### Download only tocsv.pl
+```
+wget https://raw.githubusercontent.com/asispatra/tools/master/hpm/tocsv.pl
+```
