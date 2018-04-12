@@ -8,8 +8,9 @@ use Data::Dumper;
 
 my @alldata = ();
 my @header = ( 'Architecture', 'SMT', 'Driver', 'HPM', 'TF_Version' );
-my @logfiles = glob( '*.log' );
+my @logfiles = `ls -rt *.log`;
 for (@logfiles) {
+  chop($_);
   my $hashdata = {};
   my ($arch, $smt, $hostname, $driver, $hpm, $tf, $tsdate, $tstime) = $_ =~ /^([^_]*)_([^_]*)_([^_]*)_([^_]*)_hpm-([^_]*)_TF-([^_]*)_.*_([^_]*)_([^_]*)_[0-9]*.log/;
   #print "$arch, $smt, $hostname, $driver, $hpm, $tf, ${tsdate}_$tstime\n";
