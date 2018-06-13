@@ -66,6 +66,11 @@ my @items2 = ('"Device"', '"Name"');
 my %itemhash2;
 @itemhash2{@items2}=();
 
+# Information that I am currently interested - for P2P write and read - link usage.
+my @items3 = ('"Src Dev"', '"Dst Dev"');
+my %itemhash3;
+@itemhash3{@items3}=();
+
 chomp($lines[1]); # Header
 chomp($lines[2]); # Unit
 my @headers = split(/,/, $lines[1]); # Split header with comma(,)
@@ -96,6 +101,22 @@ for (@headers) {
 chop($pattern); # Pattern is generated
 #print $pattern . "\n";
 my $regex = qr/$pattern/;
+
+my $pppattern = '^'; # Pattern for P2P link Usage: Src Dev and Dst Dev
+$i = 0;
+for (@headers) {
+        if (exists($itemhash3{$_})) {
+                $pppattern = $pppattern . '"([^"]*)",';
+        } else {
+                $pppattern = $pppattern . '[^,]*,';
+        }
+        $i++;
+}
+
+chop($pppattern); # Pattern is generated
+#print $pppattern . "\n";
+my $ppregex = qr/$pppattern/;
+
 my $ln_asis = 3; # First 3 lines of the dump info is header related - _, Header, Unit
 my %std; # We need to find what is the uniq operation happened on each iteration.
 my %ops; # Hash of operations: operation -> number of occurance
@@ -166,6 +187,11 @@ my %shtod; # Total size HtoD
 my %sdtoh; # Total size DtoH
 my %sdtod; # Total size DtoD
 my %sptop; # Total size PtoP
+my %dlinkptop; # P2P Link Usage
+my %rlinkptop;
+my %alinkptop;
+my %blinkptop;
+my %slinkptop;
 
 my $DONE=0;
 my %CAPTURE;
@@ -203,6 +229,9 @@ while ($ln < $total_lines) {
                 } elsif ($DtoD eq $operation) {
                         calculate(\%ddtod, \%rdtod, \%adtod, \%bdtod, $gpu, $start, $duration, \%sdtod, $size);
                 } elsif ($PtoP eq $operation) {
+                        my ($srcdev, $dstdev) = $lines[$ln] =~ $ppregex;
+                        calculate(\%dlinkptop, \%rlinkptop, \%alinkptop, \%blinkptop, $srcdev, $start, $duration, \%slinkptop, $size);
+                        calculate(\%dlinkptop, \%rlinkptop, \%alinkptop, \%blinkptop, $dstdev, $start, $duration, \%slinkptop, $size);
                         calculate(\%dptop, \%rptop, \%aptop, \%bptop, $gpu, $start, $duration, \%sptop, $size);
                 } else {
                         calculate_only_time(\%dcompute, \%rcompute, \%acompute, \%bcompute, $gpu, $start, $duration);
@@ -222,6 +251,7 @@ while ($ln < $total_lines) {
                         delete $ddtoh{$gpu};
                         delete $ddtod{$gpu};
                         delete $dptop{$gpu};
+                        delete $dlinkptop{$gpu};
                         delete $dgpu{$gpu};
                         delete $dcompute{$gpu};
                         delete $dcommunication{$gpu};
@@ -229,6 +259,7 @@ while ($ln < $total_lines) {
                         delete $sdtoh{$gpu};
                         delete $sdtod{$gpu};
                         delete $sptop{$gpu};
+                        delete $slinkptop{$gpu};
                         $tmptime{$gpu}=$start + $duration;
                 }
         }
@@ -307,11 +338,13 @@ sub print__result {
         if (exists $ddtoh{$gpu}) { print ",$rdtoh{$gpu}"; } else {print ","; } $printstr="${printstr},DtoH($time_unit)";
         if (exists $ddtod{$gpu}) { print ",$rdtod{$gpu}"; } else {print ","; } $printstr="${printstr},DtoD($time_unit)";
         if (exists $dptop{$gpu}) { print ",$rptop{$gpu}"; } else {print ","; } $printstr="${printstr},PtoP($time_unit)";
+        if (exists $dlinkptop{$gpu}) { print ",$rlinkptop{$gpu}"; } else {print ","; } $printstr="${printstr},PtoP Link($time_unit)";
 
         if ($print_comm_datasize and exists $scommunication{$gpu}) { print ",$scommunication{$gpu}"; } else {print ","; } $printstr="${printstr},Communication($unit)";
         if ($print_comm_datasize and exists $shtod{$gpu}) { print ",$shtod{$gpu}"; } else {print ","; } $printstr="${printstr},HtoD($unit)";
         if ($print_comm_datasize and exists $sdtoh{$gpu}) { print ",$sdtoh{$gpu}"; } else {print ","; } $printstr="${printstr},DtoH($unit)";
         if ($print_comm_datasize and exists $sdtod{$gpu}) { print ",$sdtod{$gpu}"; } else {print ","; } $printstr="${printstr},DtoD($unit)";
         if ($print_comm_datasize and exists $sptop{$gpu}) { print ",$sptop{$gpu}"; } else {print ","; } $printstr="${printstr},PtoP($unit)";
+        if ($print_comm_datasize and exists $slinkptop{$gpu}) { print ",$slinkptop{$gpu}"; } else {print ","; } $printstr="${printstr},PtoP Link($unit)";
         print "\n";
 }
