@@ -1,10 +1,24 @@
 #!/bin/bash
 
+function split_JSON() {
+N=0
+for c in $(echo $1 | sed -e 's/\(.\)/\1\n/g') ; do
+  echo -n "$c"
+  if [ "$c" == "{" ] ; then
+    N=$(expr $N + 1)
+  elif [ "$c" == "}" ] ; then
+    if [ $N -eq 1 ] ; then echo ; fi
+    N=$(expr $N - 1)
+  fi
+done
+}
+
 COURSE_URL="https://www.coursera.org/learn/neural-networks-deep-learning"
 
 OUT=$(curl -s ${COURSE_URL} | grep "window.App")
 MODULES=$(echo "$OUT" | sed 's/.*"onDemandCourseMaterialModules.v1":\({.*}\)}/\1/' | sed 's/},/\n/g' | grep '"moduleIds":null' | tr ' ' '\032')
-LECTURES=$(echo "$OUT" |  tr ',' '\n' | grep -A 3 -B 5 '"typeName":"lecture"' | tr ' ' '\032' | tr '\n' '\031' | sed 's/"name"/\n"name"/g' | grep -v onDemandCourseMaterialItems)
+LECTURES=$(echo "$OUT" | sed 's/.*"onDemandCourseMaterialItems.v2":{\(.*?\)/\1/' | sed 's/\(.*\)},"onDemandCourseSchedules.v1".*/\1/' | tr ' ' '\032')
+LECTURES=$(split_JSON "$LECTURES" | grep '"typeName":"lecture"')
 COURSE_NAME=$(echo ${COURSE_URL} | sed 's/.*\/\(.*\)/\1/')
 
 MODULE_NO=1
@@ -18,7 +32,7 @@ for line in $MODULES ; do
   LECTURE_NO=1
   for Lline in $LECTURES ; do
     Lline=$(echo $Lline | tr '\032' ' ')
-    Llines=$(echo $Lline | tr '\031' '\n')
+    Llines=$(echo $Lline | tr ',' '\n')
     moduleId=$(echo "$Llines" | grep '"moduleId":"' | sed 's/.*"[^"][^"]*":"\([^"][^"]*\)"/\1/')
     if [ "${MODULE_ID}" == "${moduleId}" ] ; then
       L_NAME=$(echo "$Llines" | grep '"name":"' | sed 's/.*"[^"][^"]*":"\([^"][^"]*\)"/\1/')
