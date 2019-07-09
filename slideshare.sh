@@ -6,7 +6,6 @@ if [ $# -ne 1 ] ; then
 fi
 
 URL="$1"
-#URL="https://www.slideshare.net/HJvanVeen/feature-engineering-72376750"
 DIR=$(echo $URL | sed 's/.*\/\(.*\)$/\1/')
 mkdir -p "$DIR"
 echo "$DIR"
