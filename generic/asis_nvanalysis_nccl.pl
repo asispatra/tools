@@ -206,6 +206,11 @@ my %dnccl; # Total NCCL
 my %rnccl; # real clock NCCL
 my %anccl; # real clock NCCL - Start
 my %bnccl; # real clock NCCL - End
+##### For Non-NCCL Computation
+my %dnnccl; # Total Non-NCCL Computation
+my %rnnccl; # real clock Non-NCCL Computation
+my %annccl; # real clock Non-NCCL Computation - Start
+my %bnnccl; # real clock Non-NCCL Computation - End
 
 my $DONE=0;
 my %CAPTURE;
@@ -247,10 +252,13 @@ while ($ln < $total_lines) {
                         calculate(\%dlinkptop, \%rlinkptop, \%alinkptop, \%blinkptop, $srcdev, $start, $duration, \%slinkptop, $size);
                         calculate(\%dlinkptop, \%rlinkptop, \%alinkptop, \%blinkptop, $dstdev, $start, $duration, \%slinkptop, $size);
                         calculate(\%dptop, \%rptop, \%aptop, \%bptop, $gpu, $start, $duration, \%sptop, $size);
-                } elsif ($operation =~ /nccl/) {
-                        calculate_only_time(\%dnccl, \%rnccl, \%anccl, \%bnccl, $gpu, $start, $duration);
                 } else {
                         calculate_only_time(\%dcompute, \%rcompute, \%acompute, \%bcompute, $gpu, $start, $duration);
+                        if ($operation =~ /nccl/) {
+                                calculate_only_time(\%dnccl, \%rnccl, \%anccl, \%bnccl, $gpu, $start, $duration);
+                        } else {
+                                calculate_only_time(\%dnnccl, \%rnnccl, \%annccl, \%bnnccl, $gpu, $start, $duration);
+                        }
                 }
         }
         if (exists($std{$gpu}) and $operation =~ /$std{$gpu}/) {
@@ -271,6 +279,7 @@ while ($ln < $total_lines) {
                         delete $dgpu{$gpu};
                         delete $dcompute{$gpu};
                         delete $dnccl{$gpu};
+                        delete $dnnccl{$gpu};
                         delete $dcommunication{$gpu};
                         delete $shtod{$gpu};
                         delete $sdtoh{$gpu};
@@ -350,8 +359,8 @@ sub print__result {
         $printstr="GPU,Start Time,Duration($time_unit),Computation($time_unit)";
         if (exists $dcommunication{$gpu}) { print ",$rcommunication{$gpu}"; } else {print ","; } $printstr="${printstr},Communication($time_unit)";
         my $nongpu = $periteration{$gpu} - $rgpu{$gpu};
-        print ",$nongpu,$rgpu{$gpu},$rnccl{$gpu}";
-        $printstr="${printstr},Non-GPU Activity($time_unit),GPU Activity($time_unit),NCCL($time_unit)";
+        print ",$nongpu,$rgpu{$gpu},$rnccl{$gpu},$rnnccl{$gpu}";
+        $printstr="${printstr},Non-GPU Activity($time_unit),GPU Activity($time_unit),NCCL($time_unit),Non-NCCL($time_unit)";
         if (exists $dhtod{$gpu}) { print ",$rhtod{$gpu}"; } else {print ","; } $printstr="${printstr},HtoD($time_unit)";
         if (exists $ddtoh{$gpu}) { print ",$rdtoh{$gpu}"; } else {print ","; } $printstr="${printstr},DtoH($time_unit)";
         if (exists $ddtod{$gpu}) { print ",$rdtod{$gpu}"; } else {print ","; } $printstr="${printstr},DtoD($time_unit)";
