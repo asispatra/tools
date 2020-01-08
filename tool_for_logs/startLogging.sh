@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CMD_INTERVAL=5
+CMD_INTERVAL=1
 Log_header="logs"
 Log_PATH=$(cat ${PWD}/Log_PATH)
 mkdir -p $Log_PATH
