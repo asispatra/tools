@@ -14,7 +14,7 @@ bash stopLogging.sh
 
 You can chage interval in startLogging.sh
 ```
-CMD_INTERVAL=5 # default
+CMD_INTERVAL=1 # default (1 second)
 ```
 
 Logs will be collected under directory, which is specified in Log_PATH, This can be change as the user want.
