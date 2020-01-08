@@ -2,6 +2,11 @@
 A tool to collect mpstat, freestat, iostat, vmstat, nvidia_smi in specified time interval.
 Note: Please make sure these commands are installed.
 
+To Download the scripts:
+```
+wget https://raw.githubusercontent.com/asispatra/tools/master/tool_for_logs/download.sh -O - | bash
+```
+
 To collect system stats
 ```
 bash startLogging.sh
